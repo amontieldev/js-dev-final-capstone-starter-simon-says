@@ -85,10 +85,11 @@ function startButtonHandler(event) {
  // TODO: Write your code here.
  // 1. Set the level of the game
  const level = setLevel();
+ 
  if (!level) {
    return; // exit the function early if setLevel returns an error
  }
-
+ maxRoundCount = level;
  // 2. Increment the roundCount
  roundCount++;
 
@@ -98,8 +99,6 @@ function startButtonHandler(event) {
  // 4. Unhide the status element
  statusSpan.classList.remove("hidden");
 
- // Update the heading to show the current round count
- //heading.textContent = `Round ${roundCount} of ${maxRoundCount}`;
 
  // 5. Start the game with the computer's turn
  playComputerTurn();
@@ -124,11 +123,22 @@ function startButtonHandler(event) {
 * 6. Return the `color` variable as the output
 */
 function padHandler(event) {
- const { color } = event.target.dataset;
- if (!color) return;
 
- // TODO: Write your code here.
- return color;
+// Step 1: Extract the color of the clicked pad
+const { color } = event.target.dataset;
+
+// Step 2: Exit if color is falsy
+if (!color) return;
+
+// Step 3: Find the pad in the pads array and play its sound
+const pad = pads.find(pad => pad.color === color);
+pad.sound.play();
+
+// Step 4: Check the player's selection
+checkPress(color);
+
+// Step 5: Return the color variable as output
+return color;
 }
 
 /**
@@ -217,18 +227,20 @@ function setText(element, text) {
 
 function activatePad(color) {
  // TODO: Write your code here.
- // Get the pad element and audio element based on the color
- const pad = pads.find(pad => pad.color === color);
+  // Get the pad element and audio element based on the color
+  const pad = pads.find((pad) => pad.color === color);
 
   // Add the "activated" class to the selected pad
-  pad.classList.add("activated");
+  //let selectedPad = document.getElementById(pad);
+  //selectedPad.classList.add("activated")
+  pad.selector.classList.add("activated");
 
   // Play the sound associated with the pad
   pad.sound.play();
 
   // After 500ms, remove the "activated" class from the pad
   setTimeout(() => {
-    pad.classList.remove("activated");
+    pad.selector.classList.remove("activated");
   }, 500);
 }
 
@@ -293,16 +305,16 @@ function playComputerTurn() {
  padContainer.classList.add("unclickable");
   
  // 2. Update the status message to indicate it's the computer's turn
- status.innerHTML = "The computer's turn...";
+ statusSpan.innerHTML = "The computer's turn...";
  
  // 3. Update the heading to show the current round count
  heading.innerHTML = `Round ${roundCount} of ${maxRoundCount}`;
  
  // 4. Generate a random index within the `pads` array
- const randomIndex = Math.floor(Math.random() * pads.length);
+ const randomIndex = pads[Math.floor(Math.random() * pads.length)];
  
  // 5. Push the selected pad color into the `computerSequence` array
- const randomColor = pads[randomIndex].dataset.color;
+ const randomColor = randomIndex.color;
  computerSequence.push(randomColor);
  
  // 6. Call `activatePads()` to light up each pad in the sequence
@@ -318,7 +330,7 @@ function playComputerTurn() {
    padContainer.classList.remove("unclickable");
  }, sequenceDuration + 1000);
 
- setTimeout(() => playHumanTurn(roundCount), roundCount * 600 + 1000); // 5
+ 
 }
 
 /**
@@ -331,9 +343,9 @@ function playComputerTurn() {
 function playHumanTurn() {
  // TODO: Write your code here.
   padContainer.classList.remove("unclickable")
-  const pressCount = document.querySelector('.press-count');
-  const remainingPresses = 10 - roundPresses;
-  pressCount.textContent = `Remaining presses: ${remainingPresses}`;
+  
+  const remainingPresses = computerSequence.length - playerSequence.length;
+  statusSpan.textContent = `Remaining presses: ${remainingPresses}`;
 }
 
 /**
@@ -360,7 +372,7 @@ function playHumanTurn() {
 */
 function checkPress(color) {
  // TODO: Write your code here.
- playerSequence.push(color);
+  playerSequence.push(color);
 
   // 2. Store the index of the `color` variable in a variable called `index`
   const index = playerSequence.length - 1;
@@ -371,8 +383,8 @@ function checkPress(color) {
   const remainingPresses = computerSequence.length - playerSequence.length;
 
   // 4. Set the status to let the player know how many presses are left in the round
-  const pressCount = document.querySelector('.press-count');
-  pressCount.textContent = `Remaining presses: ${remainingPresses}`;
+  //const pressCount = document.querySelector('.press-count');
+  statusSpan.textContent = `Remaining presses: ${remainingPresses}`;
 
   // 5. Check whether the elements at the `index` position in `computerSequence`
   // and `playerSequence` match. If they don't match, it means the player made
